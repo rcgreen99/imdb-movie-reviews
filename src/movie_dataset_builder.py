@@ -17,10 +17,8 @@ class MovieDatasetBuilder:
         """
         returns a pandas dataframe
         """
-        # run model
         # read in the data
         df = pd.read_csv(self.filename)
-        # print(df.head())
         print(f"\nNumber of reviews: {len(df.index)}")
 
         # remove duplicate rows
@@ -37,7 +35,9 @@ class MovieDatasetBuilder:
 
         # convert labels to 0 and 1
         df["sentiment"] = df["sentiment"].map({"positive": 1, "negative": 0})
-        # df.head()
 
-        # split the data into train and validation sets and return
-        return self.split_data(df)
+        # convert df to MovieDataset
+        dataset = MovieDataset(df)
+
+        # split the data into train and validation and return
+        return self.split_data(dataset)

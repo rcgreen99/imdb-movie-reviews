@@ -8,7 +8,7 @@ class TrainingSession:
     def __init__(self, filename):
         self.filename = filename
         self.epochs = 5
-        self.batch_size = 3
+        self.batch_size = 32
 
     def run(self):
         builder = MovieDatasetBuilder(self.filename)
@@ -20,9 +20,6 @@ class TrainingSession:
             train_dataset, batch_size=self.batch_size, shuffle=True
         )
         val_dataloader = DataLoader(val_dataset, batch_size=self.batch_size)
-
-        print(len(train_dataloader))
-        print(len(val_dataloader))
 
         trainer = Trainer(
             model=model,

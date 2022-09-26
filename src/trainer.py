@@ -33,17 +33,21 @@ class Trainer:
         self.epochs = 1
         for epoch in range(self.epochs):
             self.model.train()
-            print("Starting epoch {}".format(epoch))
+            print(f"Starting epoch {epoch + 1} of {self.epochs}")
             train_acc = 0
             train_loss = 0
-            for batch in self.train_dataloader:
+            for i, batch in enumerate(self.train_dataloader):
+                print(f"Starting batch {i + 1} of {len(self.train_dataloader)}")
                 input_ids = batch["input_ids"].to(device)
                 attention_mask = batch["attention_mask"].to(device)
                 targets = batch["targets"].to(device)
 
                 optimizer.zero_grad()  # clear gradients
                 outputs = self.model(input_ids, attention_mask)  # forward pass
-                loss = criterion(outputs, targets.reshape(-1, 1))  # calculate loss
+                loss = criterion(
+                    outputs,
+                    targets.reshape(-1, 1).float(),  # not sure what this is doing***
+                )  # calculate loss
                 train_loss += loss.item()  # add loss to train_loss
                 loss.backward()  # backward pass
                 optimizer.step()  # update weights

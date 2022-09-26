@@ -19,7 +19,7 @@ class MovieDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        print(f"index: {index}")
+        # print(f"index: {index}")
         review = str(self.reviews[index])
         target = self.targets[index]
 
