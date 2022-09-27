@@ -22,8 +22,8 @@ class MovieDatasetBuilder:
         print(f"\nNumber of reviews: {len(df.index)}")
 
         # remove duplicate rows
-        df.drop_duplicates(subset=["review"], inplace=True)
-        print(f"Number of unqiue reviews: {len(df.index)}\n")
+        # df.drop_duplicates(subset=["review"], inplace=True)
+        # print(f"Number of unqiue reviews: {len(df.index)}\n")
 
         # check the distribution of the labels
         print(df.sentiment.value_counts())

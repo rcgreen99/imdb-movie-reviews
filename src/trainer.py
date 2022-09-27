@@ -56,15 +56,22 @@ class Trainer:
             val_loss = 0
             with torch.no_grad():
                 self.model.eval()
-                for batch in self.val_dataloader:
+                for i, batch in enumerate(self.val_dataloader):
+                    print(f"Starting batch {i + 1} of {len(self.train_dataloader)}")
                     input_ids = batch["input_ids"].to(device)
                     attention_mask = batch["attention_mask"].to(device)
                     targets = batch["targets"].to(device)
 
-                    outputs = self.model(input_ids, attention_mask)
-                    loss = criterion(outputs, targets)
+                    loss = criterion(
+                        outputs,
+                        targets.reshape(
+                            -1, 1
+                        ).float(),  # not sure what this is doing***
+                    )  # calculate loss
                     val_loss += loss.item()
 
             print(f"Epoch: {epoch+1}/{self.epochs}")
-            print(f"Train Loss: {train_loss/len(self.train_dataloader)}")
-            print(f"Val Loss: {val_loss/len(self.val_dataloader)}")
+            print(f"Train Loss: {train_loss/len(self.train_dataloader):4f}")
+            print(f"Train Acc: {train_acc/len(self.train_dataloader):4f}")
+            print(f"Val Loss: {val_loss/len(self.val_dataloader):4f}")
+            print(f"Val Acc: {val_acc/len(self.val_dataloader):4f}")
