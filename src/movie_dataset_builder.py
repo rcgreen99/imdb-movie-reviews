@@ -19,7 +19,7 @@ class MovieDatasetBuilder:
         """
         # read in the data
         print("Reading in data...")
-        df = pd.read_csv(self.filename)[:160]
+        df = pd.read_csv(self.filename)
         print(f"\nNumber of reviews: {len(df.index)}")
 
         # remove duplicate rows

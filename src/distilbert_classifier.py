@@ -5,12 +5,16 @@ from torch import nn
 class DistilBertClassifier(nn.Module):
     def __init__(self):
         super().__init__()
+
         self.distilbert_model = DistilBertModel.from_pretrained(
             "distilbert-base-uncased"
         )
-        self.dense1 = nn.Linear(768, 768)
-        self.relu1 = nn.ReLU()
-        # self.dropout = nn.Dropout(0.3)
+        # for param in self.distilbert_model.parameters():
+        #     param.requires_grad = False
+
+        # self.dense1 = nn.Linear(768, 768)
+        # self.relu1 = nn.ReLU()
+        # self.dropout_1 = nn.Dropout(0.3)
         self.classifier = nn.Linear(768, 1)
         self.sigmoid = nn.Sigmoid()
 
@@ -22,12 +26,9 @@ class DistilBertClassifier(nn.Module):
         outputs = self.distilbert_model(
             input_ids=input_ids, attention_mask=attention_mask
         )
-
-        linear_output = self.dense1(
-            outputs[0][:, 0, :]
-        )  # outputs[0][:, 0, :] is the last hidden state, but is this right?
-
-        # dropout_output = self.dropout(linear_output)
-        relu_output = self.relu1(linear_output)
-        output = self.classifier(relu_output)
+        # dropout_1 = self.dropout_1(outputs[0][:, 0, :])
+        # linear_output = self.dense1(outputs[0][:, 0, :])
+        # relu_output = self.relu1(linear_output)
+        # dropout_1 = self.dropout_1(relu_output)
+        output = self.classifier(outputs[0][:, 0, :])
         return self.sigmoid(output)
