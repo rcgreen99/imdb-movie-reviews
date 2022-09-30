@@ -7,7 +7,7 @@ from src.trainer import Trainer
 class TrainingSession:
     def __init__(self, filename):
         self.filename = filename
-        self.epochs = 5
+        self.epochs = 100
         self.batch_size = 32
 
     def run(self):
@@ -25,7 +25,7 @@ class TrainingSession:
             model=model,
             train_dataloader=train_dataloader,
             val_dataloader=val_dataloader,
-            learning_rate=2e-5,
+            learning_rate=2e-4,
             epochs=self.epochs,
             batch_size=self.batch_size,
         )

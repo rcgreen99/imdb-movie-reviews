@@ -1,0 +1,6 @@
+pandas
+numpy
+matplotlib
+seaborn
+# torch 
+# special pytorch required for CUDA 11.2/3

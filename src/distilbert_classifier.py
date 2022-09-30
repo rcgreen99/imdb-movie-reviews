@@ -25,7 +25,7 @@ class DistilBertClassifier(nn.Module):
 
         linear_output = self.dense1(
             outputs[0][:, 0, :]
-        )  # outputs[0] is the last hidden state, but is this right?
+        )  # outputs[0][:, 0, :] is the last hidden state, but is this right?
 
         # dropout_output = self.dropout(linear_output)
         relu_output = self.relu1(linear_output)

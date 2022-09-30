@@ -1,0 +1,7 @@
+TODO
+- confirm that training is only done on custom layers and not distilbert
+- vertify forward is correct (unsure about fisrt layer)
+
+
+PROBLEMS
+- If multiple of batch size not used, error with target sizes

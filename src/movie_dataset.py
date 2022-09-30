@@ -34,7 +34,8 @@ class MovieDataset(Dataset):
             return_tensors="pt",
         )
         return {
+            # "review_text": review,  # for debugging
             "input_ids": encoded_review["input_ids"].flatten(),
             "attention_mask": encoded_review["attention_mask"].flatten(),
-            "targets": torch.tensor(target),
+            "target": torch.tensor(target),
         }

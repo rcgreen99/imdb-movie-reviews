@@ -18,7 +18,8 @@ class MovieDatasetBuilder:
         returns a pandas dataframe
         """
         # read in the data
-        df = pd.read_csv(self.filename)
+        print("Reading in data...")
+        df = pd.read_csv(self.filename)[:160]
         print(f"\nNumber of reviews: {len(df.index)}")
 
         # remove duplicate rows
@@ -26,7 +27,7 @@ class MovieDatasetBuilder:
         # print(f"Number of unqiue reviews: {len(df.index)}\n")
 
         # check the distribution of the labels
-        print(df.sentiment.value_counts())
+        # print(df.sentiment.value_counts())
 
         # get baseline
         # print(
