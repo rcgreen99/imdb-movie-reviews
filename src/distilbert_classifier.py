@@ -19,10 +19,6 @@ class DistilBertClassifier(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, input_ids, attention_mask):
-        # _, pooled_output = self.distilbert(
-        #     input_ids=input_ids, attention_mask=attention_mask
-        # )
-
         outputs = self.distilbert_model(
             input_ids=input_ids, attention_mask=attention_mask
         )

@@ -15,7 +15,7 @@ class MovieDatasetBuilder:
 
     def build_dataset(self):
         """
-        returns a pandas dataframe
+        reads in the dataset, preforms preprocessing operations, and returns a pandas dataframe
         """
         # read in the data
         print("Reading in data...")

@@ -2,5 +2,6 @@ pandas
 numpy
 matplotlib
 seaborn
+pytest
 # torch 
 # special pytorch required for CUDA 11.2/3

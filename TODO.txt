@@ -1,4 +1,5 @@
 #TODO
+- convert time and metrics into methods
 - fix warning on model train
 - fix train loss printing
 - arg parser class
@@ -6,3 +7,6 @@
 - refactor
 - F1, ROC, AUC metrics
 - graphs
+- unit tests
+- dockerize
+- add fast api interface (jinja2 templates)

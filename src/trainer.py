@@ -47,29 +47,27 @@ class Trainer:
         self.model.train()
 
         train_correct = 0
-        train_loss = 0
+        running_train_loss = 0
         average_batch_time = 0
         for i, batch in enumerate(self.train_dataloader):
             training_time = time.time()
             print(f"{i + 1}/{len(self.train_dataloader)}", end="\r")
-            input_ids = batch["input_ids"].to(self.device)
-            attention_mask = batch["attention_mask"].to(self.device)
-            targets = batch["target"].to(self.device)
+
+            input_ids, attention_mask, targets = self.unpack_batch(batch)
 
             self.optimizer.zero_grad()  # clear gradients
             outputs = self.model(input_ids, attention_mask)  # forward pass
-            loss = self.criterion(
-                outputs,
-                targets.reshape(-1, 1).float(),
-            )  # calculate loss
-            train_loss += loss.item()  # add loss to train_loss
+            loss, train_loss = self.calculate_loss(outputs, targets)
             loss.backward()  # backward pass
             self.optimizer.step()  # update weights
 
-            # calculate accuracy
+            # calculate running accuracy
             outputs = torch.round(outputs)
             train_correct += (outputs == targets.reshape(-1, 1)).float().sum()
             running_train_acc = 100 * train_correct / ((i + 1) * self.batch_size)
+
+            # calculate running loss
+            running_train_loss += loss.item() * ((i + 1) * self.batch_size)
 
             # calculate time remaining
             average_batch_time = (
@@ -94,9 +92,7 @@ class Trainer:
             val_correct = 0
             val_loss = 0
             for i, batch in enumerate(self.val_dataloader):
-                input_ids = batch["input_ids"].to(self.device)
-                attention_mask = batch["attention_mask"].to(self.device)
-                targets = batch["target"].to(self.device)
+                input_ids, attention_mask, targets = self.unpack_batch(batch)
 
                 outputs = self.model(input_ids, attention_mask)
                 loss = self.criterion(
@@ -114,3 +110,21 @@ class Trainer:
             f"Val Loss: {val_loss/len(self.val_dataloader):.6f}\t",
             f"Val Acc: {val_acc:.6f}",
         )
+
+    def save_model_state(self, path):
+        torch.save(self.model.state_dict(), path)
+
+    def unpack_batch(self, batch):
+        input_ids = batch["input_ids"].to(self.device)
+        attention_mask = batch["attention_mask"].to(self.device)
+        targets = batch["target"].to(self.device)
+        return input_ids, attention_mask, targets
+
+    def calculate_loss(self, outputs, targets):
+        # calculate loss
+        loss = self.criterion(
+            outputs,
+            targets.reshape(-1, 1).float(),
+        )
+        train_loss += loss.item()  # add loss to train_loss
+        return loss, train_loss
