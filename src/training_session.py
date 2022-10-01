@@ -1,4 +1,4 @@
-from re import I
+import torch
 from torch.utils.data import DataLoader
 from src.movie_dataset_builder import MovieDatasetBuilder
 from src.distilbert_classifier import DistilBertClassifier

@@ -1,10 +1,7 @@
 #TODO
-- convert time and metrics into methods
 - fix warning on model train
-- fix train loss printing
 - arg parser class
 - fine tune model
-- refactor
 - F1, ROC, AUC metrics
 - graphs
 - unit tests

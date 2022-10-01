@@ -1,8 +1,13 @@
-# training loop
-import time
 import torch
 import torch.nn as nn
 from torch.optim import Adam
+
+from rich.progress import (
+    BarColumn,
+    Progress,
+    TextColumn,
+    TimeRemainingColumn,
+)
 
 
 class Trainer:
@@ -32,99 +37,143 @@ class Trainer:
             self.criterion = self.criterion.cuda()
 
     def fit(self):
+        """
+        Train and validate the model for self.epochs
+        """
         print("Training...")
         for epoch in range(self.epochs):
             print(f"Epoch {epoch + 1}/{self.epochs}")
             self.train()
             self.evaluate()
 
-    def estimated_time_remaining(self, curr_batch, total_batches, avg_time_per_batch):
-        batches_left = total_batches - curr_batch
-        time_left = batches_left * avg_time_per_batch
-        return time_left
-
     def train(self):
+        """
+        Train the model for one epoch
+        """
         self.model.train()
 
-        train_correct = 0
-        running_train_loss = 0
-        average_batch_time = 0
-        for i, batch in enumerate(self.train_dataloader):
-            training_time = time.time()
-            print(f"{i + 1}/{len(self.train_dataloader)}", end="\r")
-
-            input_ids, attention_mask, targets = self.unpack_batch(batch)
-
-            self.optimizer.zero_grad()  # clear gradients
-            outputs = self.model(input_ids, attention_mask)  # forward pass
-            loss, train_loss = self.calculate_loss(outputs, targets)
-            loss.backward()  # backward pass
-            self.optimizer.step()  # update weights
-
-            # calculate running accuracy
-            outputs = torch.round(outputs)
-            train_correct += (outputs == targets.reshape(-1, 1)).float().sum()
-            running_train_acc = 100 * train_correct / ((i + 1) * self.batch_size)
-
-            # calculate running loss
-            running_train_loss += loss.item() * ((i + 1) * self.batch_size)
-
-            # calculate time remaining
-            average_batch_time = (
-                (average_batch_time * (i)) + (time.time() - training_time)
-            ) / (i + 1)
-            remaining_time = self.estimated_time_remaining(
-                i, len(self.train_dataloader), average_batch_time
+        progress = self.create_progress_bar()
+        with progress:
+            task = progress.add_task(
+                "Training",
+                loop_type="Train",
+                loss=0,
+                accuracy=0,
+                total=len(self.train_dataloader),
             )
-
-            print(
-                f"\t - {time.time() - training_time:.3f}s - Loss: {loss:.6f}\tAccuracy: {running_train_acc:.6f} \tEst time: {remaining_time:.2f}s",
-                end="\r",
-            )
-
-        print("")
-
-        # train_acc = 100 * train_correct / len(self.train_dataloader.dataset)
-
-    def evaluate(self):
-        with torch.no_grad():
-            self.model.eval()
-            val_correct = 0
-            val_loss = 0
-            for i, batch in enumerate(self.val_dataloader):
+            # training loop
+            num_correct, running_loss = 0, 0
+            for batch_idx, batch in enumerate(self.train_dataloader):
                 input_ids, attention_mask, targets = self.unpack_batch(batch)
 
+                self.optimizer.zero_grad()
                 outputs = self.model(input_ids, attention_mask)
-                loss = self.criterion(
-                    outputs,
-                    targets.reshape(-1, 1).float(),
+                loss, running_loss = self.calculate_loss(outputs, targets, running_loss)
+                loss.backward()
+                self.optimizer.step()
+
+                running_accuracy, num_correct = self.calculate_accuracy(
+                    outputs, targets, num_correct, batch_idx
                 )
-                val_loss += loss.item()
 
-                # calculate accuracy
-                outputs = torch.round(outputs)
-                val_correct += (outputs == targets.reshape(-1, 1)).float().sum()
+                progress.update(
+                    task,
+                    advance=1,
+                    description=f"Training   {batch_idx+1}/{len(self.train_dataloader)}",
+                    loss=running_loss / (batch_idx + 1),
+                    accuracy=running_accuracy,
+                )
 
-        val_acc = 100 * val_correct / len(self.val_dataloader.dataset)
-        print(
-            f"Val Loss: {val_loss/len(self.val_dataloader):.6f}\t",
-            f"Val Acc: {val_acc:.6f}",
-        )
+    def evaluate(self):
+        """
+        Evaluate the model on the validation set
+        """
+        self.model.eval()
+
+        progress = self.create_progress_bar()
+        with progress:
+            task = progress.add_task(
+                "Validating",
+                loop_type="Val",
+                loss=0,
+                accuracy=0,
+                total=len(self.val_dataloader),
+            )
+            with torch.no_grad():
+                # validation loop
+                num_correct, running_loss = 0, 0
+                for batch_idx, batch in enumerate(self.val_dataloader):
+                    input_ids, attention_mask, targets = self.unpack_batch(batch)
+
+                    outputs = self.model(input_ids, attention_mask)
+                    loss, running_loss = self.calculate_loss(
+                        outputs, targets, running_loss
+                    )
+
+                    running_accuracy, num_correct = self.calculate_accuracy(
+                        outputs, targets, num_correct, batch_idx
+                    )
+
+                    progress.update(
+                        task,
+                        advance=1,
+                        description=f"Validating {batch_idx+1}/{len(self.val_dataloader)}",
+                        loss=running_loss / (batch_idx + 1),
+                        accuracy=running_accuracy,
+                    )
 
     def save_model_state(self, path):
+        """
+        Save model state to path
+        """
         torch.save(self.model.state_dict(), path)
 
+    def create_progress_bar(self):
+        """
+        Create a progress bar object
+        Returns progress bar
+        """
+        progress = Progress(
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(),
+            "[progress.percentage]{task.percentage:>3.1f}%",
+            "•",
+            TimeRemainingColumn(),
+            "•",
+            TextColumn("[red]{task.fields[loop_type]} Loss: {task.fields[loss]:.6f}"),
+            "•",
+            TextColumn(
+                "[yellow]{task.fields[loop_type]} Accuracy: {task.fields[accuracy]:.6f}"
+            ),
+        )
+        return progress
+
     def unpack_batch(self, batch):
+        """
+        Unpack batch into input_ids, attention_mask, and targets
+        loads batch to device
+        Return input_ids, attention_mask, and targets
+        """
         input_ids = batch["input_ids"].to(self.device)
         attention_mask = batch["attention_mask"].to(self.device)
         targets = batch["target"].to(self.device)
         return input_ids, attention_mask, targets
 
-    def calculate_loss(self, outputs, targets):
-        # calculate loss
-        loss = self.criterion(
-            outputs,
-            targets.reshape(-1, 1).float(),
-        )
-        train_loss += loss.item()  # add loss to train_loss
-        return loss, train_loss
+    def calculate_loss(self, outputs, targets, running_loss):
+        """
+        Calculate loss and running loss
+        Return loss and running loss
+        """
+        loss = self.criterion(outputs, targets.reshape(-1, 1).float())
+        running_loss = loss.item()
+        return loss, running_loss
+
+    def calculate_accuracy(self, outputs, targets, num_correct, i):
+        """
+        Calculate num_correct and running accuracy based on number of batches so far
+        Return accuracy and num_correct
+        """
+        outputs = torch.round(outputs)
+        # since python is pass by reference, num_correct is updated
+        num_correct += (outputs == targets.reshape(-1, 1)).float().sum()
+        return 100 * num_correct / ((i + 1) * self.batch_size), num_correct
