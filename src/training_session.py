@@ -8,7 +8,8 @@ class TrainingSession:
     def __init__(self, filename):
         self.filename = filename
         self.epochs = 5
-        self.batch_size = 32
+        self.batch_size = 64
+        self.learning_rate = 2e-5
 
     def run(self):
         builder = MovieDatasetBuilder(self.filename)
@@ -25,7 +26,7 @@ class TrainingSession:
             model=model,
             train_dataloader=train_dataloader,
             val_dataloader=val_dataloader,
-            learning_rate=2e-5,
+            learning_rate=self.learning_rate,
             epochs=self.epochs,
             batch_size=self.batch_size,
         )
@@ -33,5 +34,4 @@ class TrainingSession:
 
 
 if __name__ == "__main__":
-    # args = parse_args()
     TrainingSession("data/IMDB-Dataset.csv").run()

@@ -20,19 +20,11 @@ class MovieDatasetBuilder:
         # read in the data
         print("Reading in data...")
         df = pd.read_csv(self.filename)
-        print(f"\nNumber of reviews: {len(df.index)}")
+        # print(f"\nNumber of reviews: {len(df.index)}")
 
         # remove duplicate rows
         # df.drop_duplicates(subset=["review"], inplace=True)
         # print(f"Number of unqiue reviews: {len(df.index)}\n")
-
-        # check the distribution of the labels
-        # print(df.sentiment.value_counts())
-
-        # get baseline
-        # print(
-        #     f"\nOur baseline accuracy is : {max(df.sentiment.value_counts(normalize=True)):.6f}"
-        # )
 
         # convert labels to 0 and 1
         df["sentiment"] = df["sentiment"].map({"positive": 1, "negative": 0})
