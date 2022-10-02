@@ -1,10 +1,13 @@
-from transformers import DistilBertModel, DistilBertForSequenceClassification
+from transformers import DistilBertModel
+from transformers import logging
 from torch import nn
 
 # create custom model
 class DistilBertClassifier(nn.Module):
     def __init__(self):
         super().__init__()
+
+        logging.set_verbosity_error()  # disables warning messages
 
         self.distilbert_model = DistilBertModel.from_pretrained(
             "distilbert-base-uncased"

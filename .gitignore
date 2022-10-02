@@ -1,6 +1,7 @@
-*.csv
+data
 .ipynb_checkpoints
 *.pyc
 *.pyo
 .vscode
 __pycache__
+.pytest_cache

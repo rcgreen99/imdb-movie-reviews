@@ -1,5 +1,4 @@
 #TODO
-- fix warning on model train
 - arg parser class
 - fine tune model
 - F1, ROC, AUC metrics
