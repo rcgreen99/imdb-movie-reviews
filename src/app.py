@@ -1,11 +1,21 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+from src.predictor import Predictor
 
-# create fats api endpoint called app
+
+class Review(BaseModel):
+    text: str
+
+
+MODEL_PATH = "models/model-93acc.pth"
+
+
 app = FastAPI()
 
-model = None
+predictor = Predictor(MODEL_PATH)
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.post("/predict")
+async def predict(review: Review):
+    prediction = predictor.predict(review.text)
+    return {"prediction": prediction}
