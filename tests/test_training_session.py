@@ -1,6 +1,6 @@
 from src.distilbert_classifier import DistilBertClassifier
-from src.training_session import TrainingSession
-from src.training_args import TrainingArgs
+from src.training.training_session import TrainingSession
+from src.training.training_args import TrainingArgs
 
 filename = "tests/fixtures/test_reviews.csv"
 

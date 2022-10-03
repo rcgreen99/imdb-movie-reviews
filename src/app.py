@@ -1,21 +1,22 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Form, Request
 from src.predictor import Predictor
-
-
-class Review(BaseModel):
-    text: str
-
-
-MODEL_PATH = "models/model-93acc.pth"
+from fastapi.templating import Jinja2Templates
 
 
 app = FastAPI()
 
+templates = Jinja2Templates(directory="templates")
+
+MODEL_PATH = "models/model-93acc.pth"
 predictor = Predictor(MODEL_PATH)
 
 
+@app.get("/")
+def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
 @app.post("/predict")
-async def predict(review: Review):
-    prediction = predictor.predict(review.text)
+async def predict(review: str = Form()):
+    prediction = predictor.predict(review)
     return {"prediction": prediction}
