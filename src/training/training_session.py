@@ -1,8 +1,8 @@
 from torch.utils.data import DataLoader
 from src.movie_dataset_builder import MovieDatasetBuilder
 from src.distilbert_classifier import DistilBertClassifier
-from src.training_args import TrainingArgs
-from src.trainer import Trainer
+from src.training.training_args import TrainingArgs
+from src.training.trainer import Trainer
 
 
 class TrainingSession:
