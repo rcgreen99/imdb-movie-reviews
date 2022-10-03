@@ -1,10 +1,14 @@
-from transformers import DistilBertModel
+from src.distilbert_classifier import DistilBertClassifier
 from src.training_session import TrainingSession
+from src.training_args import TrainingArgs
+
+filename = "tests/fixtures/test_reviews.csv"
+
+default_args = TrainingArgs().parse_args()
 
 
 def test_init():
-    filename = "tests/fixtures/test_reviews.csv"
-    session = TrainingSession(filename)
+    session = TrainingSession(default_args)
     assert session.filename == filename
     assert session.epochs == 3
     assert session.batch_size == 32
@@ -12,16 +16,14 @@ def test_init():
 
 
 def test_create_datasets():
-    filename = "tests/fixtures/test_reviews.csv"
-    session = TrainingSession(filename)
+    session = TrainingSession(default_args)
     session.create_datasets()
     assert len(session.train_dataset) == 8
     assert len(session.val_dataset) == 2
 
 
 def test_create_dataloaders():
-    filename = "tests/fixtures/test_reviews.csv"
-    session = TrainingSession(filename)
+    session = TrainingSession(default_args)
     session.create_datasets()
     session.create_dataloaders()
     assert len(session.train_dataloader) == 1
@@ -29,7 +31,6 @@ def test_create_dataloaders():
 
 
 def test_create_model():
-    filename = "tests/fixtures/test_reviews.csv"
-    session = TrainingSession(filename)
+    session = TrainingSession(default_args)
     session.create_model()
-    assert type(session.model.distilbert_model) == DistilBertModel
+    assert isinstance(session.model, DistilBertClassifier)

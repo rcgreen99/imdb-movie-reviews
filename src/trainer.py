@@ -18,14 +18,12 @@ class Trainer:
         val_dataloader,
         learning_rate,
         epochs,
-        batch_size,
     ):
         self.model = model
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
         self.learning_rate = learning_rate
         self.epochs = epochs
-        self.batch_size = batch_size
 
         self.criterion = nn.BCELoss()
         self.optimizer = Adam(self.model.parameters(), lr=self.learning_rate)
@@ -45,6 +43,7 @@ class Trainer:
             print(f"Epoch {epoch + 1}/{self.epochs}")
             self.train()
             self.evaluate()
+            self.save_model_state(f"models/model_e{epoch}.pth")
 
     def train(self):
         """
@@ -73,7 +72,11 @@ class Trainer:
                 self.optimizer.step()
 
                 running_accuracy, num_correct = self.calculate_accuracy(
-                    outputs, targets, num_correct, batch_idx
+                    outputs,
+                    targets,
+                    self.train_dataloader.batch_size,
+                    num_correct,
+                    batch_idx,
                 )
 
                 progress.update(
@@ -106,12 +109,17 @@ class Trainer:
                     input_ids, attention_mask, targets = self.unpack_batch(batch)
 
                     outputs = self.model(input_ids, attention_mask)
+
                     loss, running_loss = self.calculate_loss(
                         outputs, targets, running_loss
                     )
 
                     running_accuracy, num_correct = self.calculate_accuracy(
-                        outputs, targets, num_correct, batch_idx
+                        outputs,
+                        targets,
+                        self.val_dataloader.batch_size,
+                        num_correct,
+                        batch_idx,
                     )
 
                     progress.update(
@@ -139,11 +147,11 @@ class Trainer:
             "[progress.percentage]{task.percentage:>3.1f}%",
             "•",
             TimeRemainingColumn(),
-            "•",
-            TextColumn("[red]{task.fields[loop_type]} Loss: {task.fields[loss]:.6f}"),
+            "|",
+            TextColumn("[red]{task.fields[loop_type]} Loss: {task.fields[loss]:.2f}"),
             "•",
             TextColumn(
-                "[yellow]{task.fields[loop_type]} Accuracy: {task.fields[accuracy]:.6f}"
+                "[yellow]{task.fields[loop_type]} Accuracy: {task.fields[accuracy]:.2f}"
             ),
         )
         return progress
@@ -168,12 +176,11 @@ class Trainer:
         running_loss = loss.item()
         return loss, running_loss
 
-    def calculate_accuracy(self, outputs, targets, num_correct, i):
+    def calculate_accuracy(self, outputs, targets, batch_size, num_correct, i):
         """
         Calculate num_correct and running accuracy based on number of batches so far
         Return accuracy and num_correct
         """
         outputs = torch.round(outputs)
-        # since python is pass by reference, num_correct is updated
         num_correct += (outputs == targets.reshape(-1, 1)).float().sum()
-        return 100 * num_correct / ((i + 1) * self.batch_size), num_correct
+        return 100 * num_correct / ((i + 1) * batch_size), num_correct
