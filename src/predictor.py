@@ -25,8 +25,10 @@ class Predictor:
         atten_mask = input["attention_mask"].unsqueeze(0).to(self.device)
 
         output = self.model(input_ids=input_ids, attention_mask=atten_mask)
-        prediction = torch.round(output)
-        return prediction.item()
+        output_val = str(output.item())[:6]
+        prediction = int(torch.round(output))
+
+        return output_val, prediction
 
     def preprocess(self, review):
         encoded_review = self.tokenizer.encode_plus(
@@ -46,9 +48,9 @@ class Predictor:
 
 if __name__ == "__main__":
     model_path = sys.argv[1]
-    eview = sys.argv[2]
+    review = sys.argv[2]
 
     predictor = Predictor(model_path)
-    prediction = predictor.predict(input)
+    output, prediction = predictor.predict(review)
 
     print(f"Prediction: {prediction}")

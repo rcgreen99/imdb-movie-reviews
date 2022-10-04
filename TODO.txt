@@ -1,7 +1,3 @@
 #TODO
-- F1, ROC, AUC metrics
-- graphs
 - unit tests
 - dockerize
-- add fast api interface (jinja2 templates)
-- create class for predictions

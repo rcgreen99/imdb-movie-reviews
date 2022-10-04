@@ -16,7 +16,15 @@ def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.post("/predict")
-async def predict(review: str = Form()):
-    prediction = predictor.predict(review)
-    return {"prediction": prediction}
+@app.post("/prediction")
+async def predict(request: Request, review: str = Form()):
+    ouput_val, prediction = predictor.predict(review)
+    if prediction:
+        sentiment = "Positive"
+    else:
+        sentiment = "Negative"
+
+    return templates.TemplateResponse(
+        "prediction.html",
+        {"request": request, "sentiment": sentiment, "output_val": ouput_val},
+    )
